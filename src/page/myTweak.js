@@ -2,9 +2,11 @@ import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Sky, Environment, Cloud } from '@react-three/drei'
-import { Debug, Physics, RigidBody } from '@react-three/rapier'
+import { Debug, Physics, RigidBody, WorldApi } from '@react-three/rapier'
 import { useControls, button } from 'leva'
 
+
+const box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
 
 export default function App() {
     const { debug } = useControls({
@@ -37,10 +39,11 @@ export default function App() {
                         <Sphere position={[-12, 13, 0]} />
                         <Sphere position={[-9, 13, 0]} />
                         <Sphere position={[-6, 13, 0]} />
+                        <CollisionBox checkers />
                         {/* <Sphere position={[-6, 13, 0]} /> */}
-                        {Array.from({ length: 20 }, (_, i) => (
+                        {/* {Array.from({ length: 20 }, (_, i) => (
                             <Sphere key={i} position={[-12 - (i * 3), 13 + i, 0]} />
-                        ))}
+                        ))} */}
                         <Pacman />
                     </group>
                 </Physics>
@@ -50,8 +53,29 @@ export default function App() {
     )
 }
 // z={-(i / 10) * depth - 20}
-function Add() {
-    console.log("add");
+function CollisionBox() {
+    const ref = useRef()
+    
+
+    useFrame(() => {
+        // box.intersectsBox()
+    })
+
+    useEffect(() => {
+        box.setFromObject(ref.current);
+    }, [])
+
+    return (
+        <RigidBody onCollisionEnter={({ manifold }) => {
+            // console.log('Collision at world position ', manifold.solverContactPoint(0))
+        }} colliders={false} type="fixed">
+
+            <mesh ref={ref} scale={10}>
+                <boxGeometry />
+                <meshStandardMaterial wireframe={true} />
+            </mesh>
+        </RigidBody>
+    )
 }
 
 const Box = ({ length = 4, ...props }) => (
@@ -67,6 +91,7 @@ function Sphere(props) {
     const ref = useRef()
     const { viewport, camera } = useThree()
     const { width, height } = viewport.getCurrentViewport(camera, [0, 0, 0])
+    const sBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
 
     const [data] = useState({
         x: THREE.MathUtils.randFloatSpread(2),
@@ -76,16 +101,27 @@ function Sphere(props) {
         rZ: Math.random() * Math.PI,
     })
 
+    // useFrame((state) => {
+    //     // ref.current.rotation.set((data.rX += 0.001), (data.rY += 0.001), (data.rZ += 0.001))
+    //     // ref.current.position.set(data.x * width, (data.y += 0.025), 0)
+    //     // WorldApi.
+    //     if (ref.current) {
+    //         if (ref.current.translation().y < -100) {
+    //             ref.current.setTranslation({ x: Math.random() * 2, y: 20, z: 0 });
+    //             ref.current.setLinvel({ x: 0, y: 0, z: 0 });
+    //         }
+    //     }
+    // })
+
     useFrame((state) => {
-        // ref.current.rotation.set((data.rX += 0.001), (data.rY += 0.001), (data.rZ += 0.001))
-        // ref.current.position.set(data.x * width, (data.y += 0.025), 0)
-        if (ref.current.position.y > height) {
-            ref.current.position.y = -height
+        sBox.setFromObject(ref.current)
+        if(sBox.intersectsBox(box)){
+            console.log("hell yeah");
         }
     })
 
     return (
-        <RigidBody colliders="ball" restitution={0.7}>
+        <RigidBody  colliders="ball" restitution={0.7}>
             <mesh ref={ref} castShadow receiveShadow {...props}>
                 <sphereGeometry args={[0.5, 32, 32]} />
                 <meshStandardMaterial color="white" />
@@ -106,20 +142,20 @@ function Sphere(props) {
 // )
 
 
-function Cylinder({position,rotation}) {
+function Cylinder({ position, rotation }) {
 
 
     const ref = useRef()
-    const random = Math.floor(Math.random()*4)+1
-    useFrame((state) => {
-        const t = state.clock.getElapsedTime()
-        ref.current.setNextKinematicTranslation({ x: 3+Math.sin(t * 10)/random, y: 2+Math.sin(t * 10)/random, z: 0 })
-        // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.2, y: Math.sin(t) * 0.1 - 0.1, z: Math.cos(t) * 0.05 })
-    })
+    const random = Math.floor(Math.random() * 4) + 1
+    // useFrame((state) => {
+    //     const t = state.clock.getElapsedTime()
+    //     ref.current.setNextKinematicTranslation({ x: 3 + Math.cos(t * 10) / random, y: 2 + Math.sin(t * 10) / random, z: 0 })
+    //     // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.2, y: Math.sin(t) * 0.1 - 0.1, z: Math.cos(t) * 0.05 })
+    // })
 
-    useEffect(()=>{
-        console.log(ref.current);
-    },[])
+    // useEffect(() => {
+    //     console.log(ref.current);
+    // }, [])
 
 
     return (
@@ -141,7 +177,10 @@ function Pacman() {
     })
     return (
         <group>
-            <RigidBody ref={ref} type="kinematicPosition" colliders="trimesh">
+            <RigidBody onCollisionEnter={(obj) => {
+                // console.log('Collision at world position ', manifold.solverContactPoint(0))
+                // console.log(obj)
+            }} ref={ref} type="kinematicPosition" colliders="trimesh">
                 <mesh castShadow receiveShadow rotation={[-Math.PI / 2, Math.PI, 0]}>
                     <sphereGeometry args={[10, 32, 32, 0, Math.PI * 1.3]} />
                     <meshStandardMaterial color="#ffc060" side={THREE.DoubleSide} />
