@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Sky, Environment, Cloud } from '@react-three/drei'
+import { useGLTF, OrbitControls, Sky, Environment, Cloud, useHelper } from '@react-three/drei'
 import { Debug, Physics, RigidBody, WorldApi } from '@react-three/rapier'
 import { useControls, button } from 'leva'
 
@@ -41,9 +41,9 @@ export default function App() {
                         <Sphere position={[-6, 13, 0]} />
                         <CollisionBox checkers />
                         {/* <Sphere position={[-6, 13, 0]} /> */}
-                        {/* {Array.from({ length: 20 }, (_, i) => (
+                        {Array.from({ length: 20 }, (_, i) => (
                             <Sphere key={i} position={[-12 - (i * 3), 13 + i, 0]} />
-                        ))} */}
+                        ))}
                         <Pacman />
                     </group>
                 </Physics>
@@ -55,7 +55,7 @@ export default function App() {
 // z={-(i / 10) * depth - 20}
 function CollisionBox() {
     const ref = useRef()
-    
+
 
     useFrame(() => {
         // box.intersectsBox()
@@ -92,6 +92,9 @@ function Sphere(props) {
     const { viewport, camera } = useThree()
     const { width, height } = viewport.getCurrentViewport(camera, [0, 0, 0])
     const sBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
+    sBox.customFlag = false;
+    // let boxHelper = {update:()=>{}}
+    useHelper(ref, THREE.BoxHelper, "red")
 
     const [data] = useState({
         x: THREE.MathUtils.randFloatSpread(2),
@@ -114,14 +117,28 @@ function Sphere(props) {
     // })
 
     useFrame((state) => {
+        // boxHelper.update()
         sBox.setFromObject(ref.current)
-        if(sBox.intersectsBox(box)){
-            console.log("hell yeah");
+        if (sBox.intersectsBox(box)) {
+            // console.log("hell yeah");
+            if (!sBox.customFlag) {
+                console.log("Enter")
+            }
+            sBox.customFlag = true;
+        } else {
+            if (sBox.customFlag) {
+                console.log("Exit")
+            }
+            sBox.customFlag = false;
         }
     })
 
+    useEffect(() => {
+        // boxHelper = new THREE.BoxHelper(ref.current, 0x00ff00)
+    }, [])
+
     return (
-        <RigidBody  colliders="ball" restitution={0.7}>
+        <RigidBody colliders="ball" restitution={0.7}>
             <mesh ref={ref} castShadow receiveShadow {...props}>
                 <sphereGeometry args={[0.5, 32, 32]} />
                 <meshStandardMaterial color="white" />
