@@ -8,9 +8,29 @@ import { useControls, button } from 'leva'
 
 const box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
 
+let currentSelectedMesh = null;
+
+let startPosition = new THREE.Vector3();
+let resultVector = new THREE.Vector3();
+
 export default function App() {
+    const transformRef = useRef();
+    const rigidRef = useRef();
     const { debug } = useControls({
-        debug: false, number: 3, foo: button((get) => alert(`Number value is ${get('number').toFixed(2)}`)),
+        position: {
+            value:{x:0,y:0},
+            onChange:(value)=>{
+                currentSelectedMesh?.dispatchEvent({ type: "moved", message: {x:value.x*50,y:value.y*50, z:0} })
+            }
+        },
+        debug: false,
+        number: 3,
+        foo: button((get) => alert(`Number value is ${get('number').toFixed(2)}`)),
+        attach: button((get) => {
+            console.log(transformRef.current);
+            console.log(rigidRef.current)
+            transformRef.current.attach(currentSelectedMesh)
+        }),
     })
     return (
         <Canvas shadows camera={{ position: [-50, -25, 150], fov: 15 }}>
@@ -25,16 +45,10 @@ export default function App() {
                 <Physics colliders={false}>
                     {debug && <Debug />}
                     <group position={[2, 3, 0]}>
-                        <TransformControls onMouseUp={(obj) => {
-                            // console.log(obj.target.object);
-                            console.log(obj.target.object.children[0].children[0].position);
-                            console.log(obj.target.object.position);
 
-                            obj.target.object.children[0].children[0].dispatchEvent({type:"moved",message:obj.target.object.position})
-                        }} >
 
-                            <Cylinder position={[-0.85, 4, 0]} rotation={[Math.PI / 2, 0, 0]} />
-                        </TransformControls>
+                        <Cylinder ref={rigidRef} rotation={[Math.PI / 2, 0, 0]} />
+
                         <Cylinder position={[1.5, 1.75, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[1.15, 1, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[2, 3, 0]} rotation={[Math.PI / 2, 0, 0]} />
@@ -45,18 +59,31 @@ export default function App() {
                         <Track position={[-3, 0, 10.5]} rotation={[0, -0.4, 0]} />
                         <Box position={[-3, 10, 0]} rotation={[0, 0, -0.5]} />
                         <Box position={[-44.6, 12.3, 0]} length={80} rotation={[0, 0, -0.03]} />
-                        <Sphere position={[-12, 13, 0]} />
+                        {/* <Sphere position={[-12, 13, 0]} />
                         <Sphere position={[-9, 13, 0]} />
-                        <Sphere position={[-6, 13, 0]} />
+                        <Sphere position={[-6, 13, 0]} /> */}
                         <CollisionBox checkers />
                         {/* <Sphere position={[-6, 13, 0]} /> */}
-                        {Array.from({ length: 20 }, (_, i) => (
+                        {/* {Array.from({ length: 20 }, (_, i) => (
                             <Sphere key={i} position={[-12 - (i * 3), 13 + i, 0]} />
-                        ))}
+                        ))} */}
                         <Pacman />
                     </group>
                 </Physics>
                 <OrbitControls makeDefault />
+                <TransformControls ref={transformRef}
+                    onMouseDown={(obj) => {
+                        console.log(obj.target.object.position);
+                        startPosition.copy(obj.target.object.position)
+                    }}
+                    onMouseUp={(obj) => {
+                        console.log(obj.target.object.position);
+                        // console.log(obj.target.object.children[0].children[0].position);
+                        // console.log(obj.target.object.position);
+                        resultVector.subVectors(obj.target.object.position,startPosition)
+                        // obj.target.object.dispatchEvent({ type: "moved", message: obj.target.object.position })
+                        obj.target.object.dispatchEvent({ type: "moved", message: resultVector })
+                    }} />
             </Suspense>
         </Canvas>
     )
@@ -145,6 +172,8 @@ function Sphere(props) {
 
 
 
+
+
     return (
         <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
             <mesh ref={ref} castShadow receiveShadow {...props}>
@@ -172,6 +201,8 @@ function Cylinder({ position, rotation }) {
 
     const ref = useRef()
     const meshRef = useRef()
+    const tmpVector = new THREE.Vector3();
+    let num = 1;
     // const random = Math.floor(Math.random() * 4) + 1
     // useFrame((state) => {
     //     const t = state.clock.getElapsedTime()
@@ -186,17 +217,29 @@ function Cylinder({ position, rotation }) {
     // 이벤트 기반으로 갈까나?
 
     useEffect(() => {
+        currentSelectedMesh = meshRef.current
         meshRef.current.addEventListener("moved", (event) => {
             console.log("moved!!");
-            // ref.current.setNextKinematicTranslation({x: meshRef.current.position.x, y: meshRef.current.position.y, z: meshRef.current.position.z })
-            ref.current.setNextKinematicTranslation({x: event.message.x, y: event.message.y, z: event.message.z })
+            num++;
+            // meshRef.current.getWorldPosition(tmpVector);
+            // ref.current.setNextKinematicTranslation({x: tmpVector.x, y: tmpVector.y, z: tmpVector.z })
+            ref.current.setTranslation({ x: event.message.x / 2, y: event.message.y / 2, z: event.message.z / 2 })
+            // meshRef.current.position.set(event.message.x, event.message.y, event.message.z)
+            // ref.current.setNextKinematicTranslation({x: num, y: num, z: num })
+            // ref.current.setNextKinematicTranslation({x: event.message.x, y: event.message.y, z: event.message.z })
         })
     }, [])
 
+    function Test() {
+        console.log("test")
+        // ref.current.setNextKinematicTranslation({x: num, y: num, z: num })
+        ref.current.setNextKinematicTranslation({ x: num, y: num, z: num })
+        num++
+    }
 
     return (
         <RigidBody ref={ref} colliders="hull" type="kinematicPosition">
-            <mesh ref={meshRef} castShadow receiveShadow position={position} rotation={rotation}>
+            <mesh onClick={Test} ref={meshRef} castShadow receiveShadow position={position} rotation={rotation}>
                 <cylinderGeometry args={[0.25, 0.25, 4]} />
                 <meshStandardMaterial />
             </mesh>
