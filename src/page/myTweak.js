@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Sky, Environment, Cloud, useHelper } from '@react-three/drei'
+import { useGLTF, OrbitControls, Sky, Environment, Cloud, useHelper, TransformControls } from '@react-three/drei'
 import { Debug, Physics, RigidBody, WorldApi } from '@react-three/rapier'
 import { useControls, button } from 'leva'
 
@@ -25,7 +25,16 @@ export default function App() {
                 <Physics colliders={false}>
                     {debug && <Debug />}
                     <group position={[2, 3, 0]}>
-                        <Cylinder position={[-0.85, 4, 0]} rotation={[Math.PI / 2, 0, 0]} />
+                        <TransformControls onMouseUp={(obj) => {
+                            // console.log(obj.target.object);
+                            console.log(obj.target.object.children[0].children[0].position);
+                            console.log(obj.target.object.position);
+
+                            obj.target.object.children[0].children[0].dispatchEvent({type:"moved",message:obj.target.object.position})
+                        }} >
+
+                            <Cylinder position={[-0.85, 4, 0]} rotation={[Math.PI / 2, 0, 0]} />
+                        </TransformControls>
                         <Cylinder position={[1.5, 1.75, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[1.15, 1, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[2, 3, 0]} rotation={[Math.PI / 2, 0, 0]} />
@@ -47,7 +56,7 @@ export default function App() {
                         <Pacman />
                     </group>
                 </Physics>
-                <OrbitControls />
+                <OrbitControls makeDefault />
             </Suspense>
         </Canvas>
     )
@@ -89,6 +98,7 @@ const Box = ({ length = 4, ...props }) => (
 
 function Sphere(props) {
     const ref = useRef()
+    const bodyRef = useRef()
     const { viewport, camera } = useThree()
     const { width, height } = viewport.getCurrentViewport(camera, [0, 0, 0])
     const sBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
@@ -104,17 +114,7 @@ function Sphere(props) {
         rZ: Math.random() * Math.PI,
     })
 
-    // useFrame((state) => {
-    //     // ref.current.rotation.set((data.rX += 0.001), (data.rY += 0.001), (data.rZ += 0.001))
-    //     // ref.current.position.set(data.x * width, (data.y += 0.025), 0)
-    //     // WorldApi.
-    //     if (ref.current) {
-    //         if (ref.current.translation().y < -100) {
-    //             ref.current.setTranslation({ x: Math.random() * 2, y: 20, z: 0 });
-    //             ref.current.setLinvel({ x: 0, y: 0, z: 0 });
-    //         }
-    //     }
-    // })
+
 
     useFrame((state) => {
         // boxHelper.update()
@@ -131,14 +131,22 @@ function Sphere(props) {
             }
             sBox.customFlag = false;
         }
+
+        if (bodyRef.current) {
+            if (bodyRef.current.translation().y < -150) {
+                // bodyRef.current.setTranslation({ x: -12, y: 13, z: 0 });
+                bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+                // bodyRef.current.sleep()
+                // console.log(bodyRef.current)
+                bodyRef.current.lockTranslations(true)
+            }
+        }
     })
 
-    useEffect(() => {
-        // boxHelper = new THREE.BoxHelper(ref.current, 0x00ff00)
-    }, [])
+
 
     return (
-        <RigidBody colliders="ball" restitution={0.7}>
+        <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
             <mesh ref={ref} castShadow receiveShadow {...props}>
                 <sphereGeometry args={[0.5, 32, 32]} />
                 <meshStandardMaterial color="white" />
@@ -163,7 +171,8 @@ function Cylinder({ position, rotation }) {
 
 
     const ref = useRef()
-    const random = Math.floor(Math.random() * 4) + 1
+    const meshRef = useRef()
+    // const random = Math.floor(Math.random() * 4) + 1
     // useFrame((state) => {
     //     const t = state.clock.getElapsedTime()
     //     ref.current.setNextKinematicTranslation({ x: 3 + Math.cos(t * 10) / random, y: 2 + Math.sin(t * 10) / random, z: 0 })
@@ -174,10 +183,20 @@ function Cylinder({ position, rotation }) {
     //     console.log(ref.current);
     // }, [])
 
+    // 이벤트 기반으로 갈까나?
+
+    useEffect(() => {
+        meshRef.current.addEventListener("moved", (event) => {
+            console.log("moved!!");
+            // ref.current.setNextKinematicTranslation({x: meshRef.current.position.x, y: meshRef.current.position.y, z: meshRef.current.position.z })
+            ref.current.setNextKinematicTranslation({x: event.message.x, y: event.message.y, z: event.message.z })
+        })
+    }, [])
+
 
     return (
         <RigidBody ref={ref} colliders="hull" type="kinematicPosition">
-            <mesh castShadow receiveShadow position={position} rotation={rotation}>
+            <mesh ref={meshRef} castShadow receiveShadow position={position} rotation={rotation}>
                 <cylinderGeometry args={[0.25, 0.25, 4]} />
                 <meshStandardMaterial />
             </mesh>
