@@ -60,7 +60,7 @@ export default function App() {
                         <Cylinder position={[-1, 7, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[-1.5, 5, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[1.75, 8, 0]} rotation={[Math.PI / 2, 0, 0]} />
-                        <Track position={[-3, 0, 10.5]} rotation={[0, -0.4, 0]} />
+                        <Track position={[0,-5,0]} rotation={[0, -0.4, 0]} />
                         <Box position={[-3, 10, 0]} rotation={[0, 0, -0.5]} />
                         <Box position={[-44.6, 12.3, 0]} length={80} rotation={[0, 0, -0.03]} />
                         {/* <Sphere position={[-12, 13, 0]} />
@@ -293,10 +293,15 @@ function Pacman() {
 }
 
 function Track(props) {
-    const { nodes } = useGLTF('/ball-trip.optimized.glb')
+    // const { nodes } = useGLTF('/ball-trip.optimized.glb')
+    const { nodes } = useGLTF('/firstStage2.glb')
+    console.log(nodes)
     return (
         <RigidBody colliders="trimesh" type="fixed">
-            <mesh geometry={nodes.Cylinder.geometry} {...props} dispose={null}>
+            <mesh geometry={nodes.Cylinder008_1.geometry} {...props} dispose={null}>
+                <meshPhysicalMaterial color="lightblue" transmission={1} thickness={1} roughness={0} />
+            </mesh>
+            <mesh geometry={nodes.Cylinder008.geometry} {...props} dispose={null}>
                 <meshPhysicalMaterial color="lightblue" transmission={1} thickness={1} roughness={0} />
             </mesh>
         </RigidBody>
