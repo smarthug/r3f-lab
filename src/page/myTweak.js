@@ -14,6 +14,7 @@ let startPosition = new THREE.Vector3();
 let resultVector = new THREE.Vector3();
 
 export default function App() {
+    const [balls, setBalls] = useState([])
     const transformRef = useRef();
     const rigidRef = useRef();
     const { debug } = useControls({
@@ -31,6 +32,9 @@ export default function App() {
             console.log(rigidRef.current)
             transformRef.current.attach(currentSelectedMesh)
         }),
+        add:button((get)=>{
+            setBalls(balls=>[...balls, {}])
+        })
     })
     return (
         <Canvas shadows camera={{ position: [-50, -25, 150], fov: 15 }}>
@@ -64,9 +68,9 @@ export default function App() {
                         <Sphere position={[-6, 13, 0]} /> */}
                         <CollisionBox checkers />
                         {/* <Sphere position={[-6, 13, 0]} /> */}
-                        {/* {Array.from({ length: 20 }, (_, i) => (
-                            <Sphere key={i} position={[-12 - (i * 3), 13 + i, 0]} />
-                        ))} */}
+                        {balls.map((_, i) => (
+                            <Sphere setBalls={setBalls} csid={i} key={i} position={[-12 - (i * 3), 13 + i, 0]} />
+                        ))}
                         <Pacman />
                     </group>
                 </Physics>
@@ -115,7 +119,7 @@ function CollisionBox() {
 }
 
 const Box = ({ length = 4, ...props }) => (
-    <RigidBody colliders="cuboid" type="fixed">
+    <RigidBody  colliders="cuboid" type="fixed">
         <mesh castShadow receiveShadow {...props}>
             <boxGeometry args={[length, 0.4, 4]} />
             <meshStandardMaterial color="white" />
@@ -150,22 +154,33 @@ function Sphere(props) {
             // console.log("hell yeah");
             if (!sBox.customFlag) {
                 console.log("Enter")
+                // bodyRef.current.raw().sleep()
+                console.log(bodyRef.current.raw())
             }
             sBox.customFlag = true;
         } else {
             if (sBox.customFlag) {
                 console.log("Exit")
+                // bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+                // bodyRef.current.raw().setTranslation({ x: -12, y: 13, z: 0 })
             }
             sBox.customFlag = false;
         }
 
         if (bodyRef.current) {
-            if (bodyRef.current.translation().y < -150) {
+            if (bodyRef.current.translation().y < -100) {
                 // bodyRef.current.setTranslation({ x: -12, y: 13, z: 0 });
                 bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
                 // bodyRef.current.sleep()
                 // console.log(bodyRef.current)
-                bodyRef.current.lockTranslations(true)
+                // bodyRef.current.lockTranslations(true)
+                bodyRef.current.raw().sleep()
+                // WorldApi.removeCollider(bodyRef.current)
+                // props.setBalls((balls)=>{
+                //     balls.splice(props.csid,1);
+                //     console.log(balls)
+                //     return [...balls]
+                // })
             }
         }
     })
