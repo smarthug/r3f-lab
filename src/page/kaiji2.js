@@ -1,32 +1,30 @@
 import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Sky, Environment, Cloud, useHelper, TransformControls } from '@react-three/drei'
-import { CuboidCollider, Debug, MeshCollider, Physics, RigidBody, WorldApi } from '@react-three/rapier'
+import { Canvas, useFrame, } from '@react-three/fiber'
+import { useGLTF, OrbitControls, Sky, Environment, Cloud, TransformControls } from '@react-three/drei'
+import { Debug, Physics, RigidBody } from '@react-three/rapier'
 import { useControls, button } from 'leva'
-import { v4 as uuid } from 'uuid'
-import { Scene } from 'three'
 // import { createWorldApi } from '@react-three/rapier/dist/declarations/src/api'
 
 
-const box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
+// const box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
 
 let currentSelectedMesh = null;
 
 let startPosition = new THREE.Vector3();
-let resultVector = new THREE.Vector3();
+// let resultVector = new THREE.Vector3();
 
-let deleteBoxHandle = 0
+// let deleteBoxHandle = 0
 
 let outBalls = null
 
-let scene = null;
+// let scene = null;
 
 export default function App() {
     const [balls, setBalls] = useState([])
     outBalls = balls;
     const transformRef = useRef();
-    const rigidRef = useRef();
+
     const { debug } = useControls({
         position: {
             value: { x: 0, y: 0 },
@@ -117,6 +115,7 @@ function CollisionBox(props) {
 
                 v.mesh.visible = false;
             }
+            return null
             // 근데 찾는것도 world api 에 접근가능해야 하잖아??
         })
     }
@@ -171,7 +170,7 @@ function Sphere(props) {
         outBalls[props.info.index].handle = bodyRef.current.handle;
         outBalls[props.info.index].mesh = ref.current;
         // console.log(outBalls);
-    }, [])
+    }, [props])
 
 
     // function Remove(obj) {
@@ -210,10 +209,10 @@ function Plate(props) {
     const ref = useRef()
     // const { nodes } = useGLTF('/ball-trip.optimized.glb')
     const { nodes } = useGLTF('/firstStage2.glb')
-   
-    useFrame((state)=>{
+
+    useFrame((state) => {
         const t = state.clock.getElapsedTime()
-        ref.current.setNextKinematicRotation({ x: Math.cos(t)*0.1 , y: 0, z: Math.sin(t)*0.1 })
+        ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
     return (
