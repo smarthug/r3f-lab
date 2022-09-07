@@ -2,8 +2,10 @@ import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Sky, Environment, Cloud, useHelper, TransformControls } from '@react-three/drei'
-import { Debug, Physics, RigidBody } from '@react-three/rapier'
+import { CuboidCollider, Debug, MeshCollider, Physics, RigidBody,WorldApi } from '@react-three/rapier'
 import { useControls, button } from 'leva'
+import { v4 as uuid } from 'uuid'
+// import { createWorldApi } from '@react-three/rapier/dist/declarations/src/api'
 
 
 const box = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
@@ -13,15 +15,17 @@ let currentSelectedMesh = null;
 let startPosition = new THREE.Vector3();
 let resultVector = new THREE.Vector3();
 
+let deleteBoxHandle = 0
+
 export default function App() {
     const [balls, setBalls] = useState([])
     const transformRef = useRef();
     const rigidRef = useRef();
     const { debug } = useControls({
         position: {
-            value:{x:0,y:0},
-            onChange:(value)=>{
-                currentSelectedMesh?.dispatchEvent({ type: "moved", message: {x:value.x*50,y:value.y*50, z:0} })
+            value: { x: 0, y: 0 },
+            onChange: (value) => {
+                currentSelectedMesh?.dispatchEvent({ type: "moved", message: { x: value.x * 50, y: value.y * 50, z: 0 } })
             }
         },
         debug: false,
@@ -32,8 +36,8 @@ export default function App() {
             console.log(rigidRef.current)
             transformRef.current.attach(currentSelectedMesh)
         }),
-        add:button((get)=>{
-            setBalls(balls=>[...balls, {}])
+        add: button((get) => {
+            setBalls(balls => [...balls, uuid()])
         })
     })
     return (
@@ -60,7 +64,7 @@ export default function App() {
                         <Cylinder position={[-1, 7, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[-1.5, 5, 0]} rotation={[Math.PI / 2, 0, 0]} />
                         <Cylinder position={[1.75, 8, 0]} rotation={[Math.PI / 2, 0, 0]} />
-                        <Track position={[0,-5,0]} rotation={[0, -0.4, 0]} />
+                        <Track position={[0, -5, 0]} rotation={[0, -0.4, 0]} />
                         <Box position={[-3, 10, 0]} rotation={[0, 0, -0.5]} />
                         <Box position={[-44.6, 12.3, 0]} length={80} rotation={[0, 0, -0.03]} />
                         {/* <Sphere position={[-12, 13, 0]} />
@@ -68,8 +72,8 @@ export default function App() {
                         <Sphere position={[-6, 13, 0]} /> */}
                         <CollisionBox checkers />
                         {/* <Sphere position={[-6, 13, 0]} /> */}
-                        {balls.map((_, i) => (
-                            <Sphere setBalls={setBalls} csid={i} key={i} position={[-12 - (i * 3), 13 + i, 0]} />
+                        {balls.map((v, i) => (
+                            <Sphere setBalls={setBalls} csid={v} key={v} position={[-12 - (i * 3), 13 + i, 0]} />
                         ))}
                         <Pacman />
                     </group>
@@ -84,7 +88,7 @@ export default function App() {
                         console.log(obj.target.object.position);
                         // console.log(obj.target.object.children[0].children[0].position);
                         // console.log(obj.target.object.position);
-                        resultVector.subVectors(obj.target.object.position,startPosition)
+                        resultVector.subVectors(obj.target.object.position, startPosition)
                         // obj.target.object.dispatchEvent({ type: "moved", message: obj.target.object.position })
                         obj.target.object.dispatchEvent({ type: "moved", message: resultVector })
                     }} />
@@ -102,24 +106,32 @@ function CollisionBox() {
     })
 
     useEffect(() => {
-        box.setFromObject(ref.current);
+        // box.setFromObject(ref.current);
+        console.log(ref.current.raw().collider(0));
+        console.log(ref.current.handle)
+        deleteBoxHandle = ref.current.handle
+        // ref.current.raw().collider().setSensor(true)
+        // setTimeout(() => {
+        //     // ref.current.raw().setSensor(true)
+        //     // ref.current.raw().setIsSensor(true)
+        // }, 2000)
     }, [])
 
     return (
-        <RigidBody onCollisionEnter={({ manifold }) => {
-            // console.log('Collision at world position ', manifold.solverContactPoint(0))
-        }} colliders={false} type="fixed">
+        <RigidBody ref={ref} type="fixed" colliders={"cuboid"} >
 
-            <mesh ref={ref} scale={10}>
+
+            <mesh scale={10}>
                 <boxGeometry />
                 <meshStandardMaterial wireframe={true} />
             </mesh>
-        </RigidBody>
+
+        </RigidBody >
     )
 }
 
 const Box = ({ length = 4, ...props }) => (
-    <RigidBody  colliders="cuboid" type="fixed">
+    <RigidBody colliders="cuboid" type="fixed">
         <mesh castShadow receiveShadow {...props}>
             <boxGeometry args={[length, 0.4, 4]} />
             <meshStandardMaterial color="white" />
@@ -135,6 +147,7 @@ function Sphere(props) {
     const sBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
     sBox.customFlag = false;
     // let boxHelper = {update:()=>{}}
+    let shitNum = 0;
     useHelper(ref, THREE.BoxHelper, "red")
 
     const [data] = useState({
@@ -149,23 +162,23 @@ function Sphere(props) {
 
     useFrame((state) => {
         // boxHelper.update()
-        sBox.setFromObject(ref.current)
-        if (sBox.intersectsBox(box)) {
-            // console.log("hell yeah");
-            if (!sBox.customFlag) {
-                console.log("Enter")
-                // bodyRef.current.raw().sleep()
-                console.log(bodyRef.current.raw())
-            }
-            sBox.customFlag = true;
-        } else {
-            if (sBox.customFlag) {
-                console.log("Exit")
-                // bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
-                // bodyRef.current.raw().setTranslation({ x: -12, y: 13, z: 0 })
-            }
-            sBox.customFlag = false;
-        }
+        // sBox.setFromObject(ref.current)
+        // if (sBox.intersectsBox(box)) {
+        //     // console.log("hell yeah");
+        //     if (!sBox.customFlag) {
+        //         console.log("Enter")
+        //         // bodyRef.current.raw().sleep()
+        //         console.log(bodyRef.current.raw())
+        //     }
+        //     sBox.customFlag = true;
+        // } else {
+        //     if (sBox.customFlag) {
+        //         console.log("Exit")
+        //         // bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+        //         // bodyRef.current.raw().setTranslation({ x: -12, y: 13, z: 0 })
+        //     }
+        //     sBox.customFlag = false;
+        // }
 
         if (bodyRef.current) {
             if (bodyRef.current.translation().y < -100) {
@@ -186,11 +199,35 @@ function Sphere(props) {
     })
 
 
+    function Remove(obj) {
+        console.log(obj.target.handle);
+        // 한번만 실행되게 flag 넣자 ....
 
+
+        if (obj.target.handle === deleteBoxHandle) {
+            sBox.customFlag = true
+            bodyRef.current.raw().collider().setSensor(true)
+            bodyRef.current.raw().sleep()
+            ref.current.visible = false
+            // props.setBalls((balls) => {
+            //     // WorldApi.removeRigidBody(bodyRef.current.handle)
+            //     const index = balls.indexOf(props.csid)
+            //     if (index > -1) {
+
+            //         balls.splice(index, 1);
+            //         console.log(balls)
+            //         return [...balls]
+            //     }
+
+            //     return balls
+            // })
+        }
+
+    }
 
 
     return (
-        <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
+        <RigidBody onCollisionEnter={Remove} ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
             <mesh ref={ref} castShadow receiveShadow {...props}>
                 <sphereGeometry args={[0.5, 32, 32]} />
                 <meshStandardMaterial color="white" />
