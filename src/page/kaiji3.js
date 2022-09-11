@@ -236,15 +236,15 @@ function FourHolePlate(props) {
     console.log(nodes);
     useFrame((state) => {
         const t = state.clock.getElapsedTime()
-        ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
+        // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
-            <mesh geometry={nodes.Cylinder009_1.geometry} {...props} dispose={null}>
+            <mesh geometry={nodes.Cylinder013_1.geometry} {...props} dispose={null}>
                 <meshPhysicalMaterial color="lightblue" thickness={1} roughness={0} />
             </mesh>
-            <mesh geometry={nodes.Cylinder009.geometry} {...props} dispose={null}>
+            <mesh geometry={nodes.Cylinder013.geometry} {...props} dispose={null}>
                 <meshPhysicalMaterial color="lightblue" thickness={1} roughness={0} metalness={0.4} />
             </mesh>
         </RigidBody>
@@ -258,15 +258,15 @@ function FiveHolePlate(props) {
     console.log(nodes);
     useFrame((state) => {
         const t = state.clock.getElapsedTime()
-        ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
+        // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
-            <mesh geometry={nodes.Cylinder009_1.geometry} {...props} dispose={null}>
+            <mesh geometry={nodes.Cylinder019_1.geometry} {...props} dispose={null}>
                 <meshPhysicalMaterial color="lightblue" thickness={1} roughness={0} />
             </mesh>
-            <mesh geometry={nodes.Cylinder009.geometry} {...props} dispose={null}>
+            <mesh geometry={nodes.Cylinder019.geometry} {...props} dispose={null}>
                 <meshPhysicalMaterial color="lightblue" thickness={1} roughness={0} metalness={0.4} />
             </mesh>
         </RigidBody>
