@@ -24,7 +24,7 @@ export default function App() {
     const videoRef = useRef();
     const [isSound, setSound] = useState(false);
     // const [isRandomColor, setIsRandomColor] = useState(false);
-
+    const scale = 1.2;
     function toggleMusic() {
 
         isSound ? videoRef.current.pauseVideo() : videoRef.current.playVideo()
@@ -41,16 +41,22 @@ export default function App() {
         // setSound(!isSound);
     }
 
-    const { debug, randomColor, scale } = useControls({
+    const { debug, randomColor } = useControls({
 
         debug: false,
         randomColor: false,
-        scale: {
-            value: 1,
-            min: 1,
-            max: 10,
-            step: 1
-        },
+        // scale: {
+        //     value: 1,
+        //     min: 1,
+        //     max: 10,
+
+        // },
+        // scale: {
+        //     value: 1,
+        //     min: 1,
+        //     max: 10,
+
+        // },
         // attach: button((get) => {
         //     transformRef.current.attach(currentSelectedMesh)
         // }),
