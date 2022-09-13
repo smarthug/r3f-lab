@@ -1,11 +1,14 @@
 import * as THREE from 'three'
 import React, { Suspense, useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame, } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Sky, Environment, Cloud, TransformControls } from '@react-three/drei'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { useGLTF, OrbitControls, Sky, Environment, Cloud, TransformControls, Html } from '@react-three/drei'
 import { Debug, Physics, RigidBody } from '@react-three/rapier'
 import { useControls, button } from 'leva'
-
+import { FaMapMarkerAlt } from 'react-icons/fa'
 import Youtube from "react-youtube";
+import confetti from 'canvas-confetti'
+// console.log(confetti);
+
 
 let currentSelectedMesh = null;
 
@@ -20,6 +23,7 @@ export default function App() {
 
     const videoRef = useRef();
     const [isSound, setSound] = useState(false);
+    // const [isRandomColor, setIsRandomColor] = useState(false);
 
     function toggleMusic() {
 
@@ -29,17 +33,24 @@ export default function App() {
 
     function onReady(event) {
         videoRef.current = event.target;
-        toggleMusic()
+        // toggleMusic()
     }
 
-    function onEnd(event){
+    function onEnd(event) {
         videoRef.current.playVideo()
         // setSound(!isSound);
     }
 
-    const { debug } = useControls({
+    const { debug, randomColor, scale } = useControls({
 
         debug: false,
+        randomColor: false,
+        scale: {
+            value: 1,
+            min: 1,
+            max: 10,
+            step: 1
+        },
         // attach: button((get) => {
         //     transformRef.current.attach(currentSelectedMesh)
         // }),
@@ -74,7 +85,7 @@ export default function App() {
     return (
         <React.Fragment>
 
-            <Canvas shadows camera={{ position: [-50, -25, 150], fov: 15 }}>
+            <Canvas shadows camera={{ position: [0, 75, 200], fov: 15 }}>
                 <Suspense fallback={null}>
                     <hemisphereLight intensity={0.45} />
                     <spotLight angle={0.4} penumbra={1} position={[20, 30, 2.5]} castShadow shadow-bias={-0.00001} />
@@ -97,10 +108,12 @@ export default function App() {
                         <CollisionBox visible={true} position={[-0.46, -6.47243272649825, 2.27]} scale={[12.55, 2, 4.84]} />
                         <CollisionBox visible={true} position={[1.92, -16.14, 1.85]} rotation={[0, 0.82, 0]} scale={[12.55, 2, 7.78]} />
                         <CollisionBox visible={true} position={[-1.35, -26.46, -0.54]} rotation={[0, 0.67, 0]} scale={[12.55, 2, 9.11]} />
+
+                        <EndCollisionBox visible={true} position={[2.7, -26.46, 3.7]} rotation={[0, 0, 0]} scale={2} />
                         {/* <CollisionBox position={[2.14, -6.45, 3.57]} scale={2} /> */}
 
                         {balls.map((v, i) => (
-                            <Sphere setBalls={setBalls} info={v} key={v.index} position={[0, 5, 0]} />
+                            <Sphere scale={scale} randomColor={randomColor} setBalls={setBalls} info={v} key={v.index} position={[0, 5, 0]} />
                         ))}
 
 
@@ -113,6 +126,18 @@ export default function App() {
                     onMouseUp={(obj) => {
                         console.log(obj.target.object.position, obj.target.object.rotation, obj.target.object.scale);
                     }} /> */}
+                    <Marker rotation={[0, 0, 0]} position={[0, -3, -5]} scale={3}>
+                        {/* Anything in here is regular HTML, these markers are from font-awesome */}
+                        <FaMapMarkerAlt style={{ color: 'red' }} />
+                    </Marker>
+                    <Marker rotation={[0, 0, 0]} position={[-3.5, -13, -3]} scale={3}>
+                        {/* Anything in here is regular HTML, these markers are from font-awesome */}
+                        <FaMapMarkerAlt style={{ color: 'red' }} />
+                    </Marker>
+                    <Marker rotation={[0, 0, 0]} position={[2.7, -23, 4]} scale={3}>
+                        {/* Anything in here is regular HTML, these markers are from font-awesome */}
+                        <FaMapMarkerAlt style={{ color: 'red' }} />
+                    </Marker>
                 </Suspense>
             </Canvas>
             <div
@@ -180,6 +205,63 @@ function CollisionBox(props) {
                 {...props}>
                 <boxGeometry />
                 <meshStandardMaterial transparent={true} opacity={0} wireframe={true} />
+                {/* <meshStandardMaterial wireframe={true} /> */}
+            </mesh>
+
+        </RigidBody >
+    )
+}
+
+
+
+function EndCollisionBox(props) {
+    const ref = useRef()
+    const meshRef = useRef()
+
+
+
+
+    function winner(obj) {
+
+
+        // filter 써야겠네
+        // console.log(obj);
+        outBalls.map((v, i) => {
+            if (v.handle === obj.target.handle) {
+                obj.target.collider().setSensor(true)
+                obj.target.sleep()
+                // ref.current.visible = true
+
+                v.mesh.visible = false;
+                console.log(v);
+                let color = v.index % 2 === 0 ? "tomato" : "cadetblue"
+                confetti();
+                setTimeout(() => {
+
+                    alert(`${color} Color Wins!`)
+                }, 1000)
+            }
+            return null
+            // 근데 찾는것도 world api 에 접근가능해야 하잖아??
+        })
+    }
+
+    return (
+        <RigidBody ref={ref}
+            onCollisionEnter={winner}
+            type="fixed" colliders={"cuboid"} >
+
+
+            <mesh
+                ref={meshRef}
+                onDoubleClick={() => {
+                    currentSelectedMesh = meshRef.current
+                    console.log("currentSelectedMesh: ", currentSelectedMesh);
+                }}
+                {...props}>
+                <boxGeometry />
+                <meshStandardMaterial transparent={true} opacity={0} wireframe={true} />
+                {/* <meshStandardMaterial wireframe={true} /> */}
             </mesh>
 
         </RigidBody >
@@ -203,6 +285,7 @@ function PositionHelper({ attach }) {
 function Sphere(props) {
     const ref = useRef()
     const bodyRef = useRef()
+    const color = props.randomColor ? [Math.random(), Math.random(), Math.random()] : props.info.index % 2 === 0 ? "tomato" : "cadetblue"
 
     // useHelper(ref, THREE.BoxHelper, "red")
 
@@ -230,7 +313,7 @@ function Sphere(props) {
             <mesh ref={ref} castShadow receiveShadow {...props}>
                 <sphereGeometry args={[0.5, 32, 32]} />
                 {/* <meshStandardMaterial color="white" /> */}
-                <meshPhysicalMaterial transmission={1} color={[Math.random(), Math.random(), Math.random()]} thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color={color} thickness={1} roughness={0} />
             </mesh>
         </RigidBody>
     )
@@ -257,10 +340,10 @@ function ThreeHolePlate(props) {
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
             <mesh geometry={nodes.Cylinder009_1.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="orange" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="darkorange" thickness={1} roughness={0} />
             </mesh>
             <mesh geometry={nodes.Cylinder009.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="orange" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="darkorange" thickness={1} roughness={0} />
             </mesh>
         </RigidBody>
     )
@@ -279,10 +362,10 @@ function FourHolePlate(props) {
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
             <mesh geometry={nodes.Cylinder013_1.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="lime" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="chartreuse" thickness={1} roughness={0} />
             </mesh>
             <mesh geometry={nodes.Cylinder013.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="lime" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="chartreuse" thickness={1} roughness={0} />
             </mesh>
         </RigidBody>
     )
@@ -301,11 +384,33 @@ function FiveHolePlate(props) {
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
             <mesh geometry={nodes.Cylinder019_1.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="cyan" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="skyblue" thickness={1} roughness={0} />
             </mesh>
             <mesh geometry={nodes.Cylinder019.geometry} {...props} dispose={null}>
-                <meshPhysicalMaterial transmission={1} color="cyan" thickness={1} roughness={0} />
+                <meshPhysicalMaterial transmission={1} color="skyblue" thickness={1} roughness={0} />
             </mesh>
         </RigidBody>
+    )
+}
+
+
+
+// Let's make the marker into a component so that we can abstract some shared logic
+function Marker({ children, ...props }) {
+    // This holds the local occluded state
+    const [occluded, occlude] = useState()
+    return (
+        <Html
+            // 3D-transform contents
+            transform
+            // Hide contents "behind" other meshes
+            occlude
+            // Tells us when contents are occluded (or not)
+            onOcclude={occlude}
+            // We just interpolate the visible state into css opacity and transforms
+            style={{ transition: 'all 0.2s', opacity: occluded ? 0 : 1, transform: `scale(${occluded ? 0.25 : 1})` }}
+            {...props}>
+            {children}
+        </Html>
     )
 }
