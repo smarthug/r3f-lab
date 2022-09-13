@@ -3,7 +3,7 @@ import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Sky, Environment, Cloud, Html } from '@react-three/drei'
 import { Debug, Physics, RigidBody } from '@react-three/rapier'
-import { useControls, button } from 'leva'
+import { useControls, button, Leva } from 'leva'
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import Youtube from "react-youtube";
 import confetti from 'canvas-confetti'
@@ -84,8 +84,10 @@ export default function App() {
 
     return (
         <React.Fragment>
-
-            <Canvas shadows camera={{ position: [0, 75, 200], fov: 15 }}>
+            <Leva
+                collapsed={window.innerWidth > 800 ? false : true}
+            />
+            <Canvas shadows camera={{ position: [0, 70, 140], fov: 15 }}>
                 <Suspense fallback={null}>
                     <hemisphereLight intensity={0.45} />
                     <spotLight angle={0.4} penumbra={1} position={[20, 30, 2.5]} castShadow shadow-bias={-0.00001} />
@@ -101,19 +103,19 @@ export default function App() {
 
 
 
-                        <ThreeHolePlate position={[0, -5, 0]} />
-                        <FourHolePlate position={[0, -15, 0]} />
-                        <FiveHolePlate position={[0, -25, 0]} />
+                        <ThreeHolePlate position={[0, 5, 0]} />
+                        <FourHolePlate position={[0, -5, 0]} />
+                        <FiveHolePlate position={[0, -15, 0]} />
 
-                        <CollisionBox visible={true} position={[-0.46, -6.47243272649825, 2.27]} scale={[12.55, 2, 4.84]} />
-                        <CollisionBox visible={true} position={[1.92, -16.14, 1.85]} rotation={[0, 0.82, 0]} scale={[12.55, 2, 7.78]} />
-                        <CollisionBox visible={true} position={[-1.35, -26.46, -0.54]} rotation={[0, 0.67, 0]} scale={[12.55, 2, 9.11]} />
+                        <CollisionBox visible={true} position={[-0.46, -6.47243272649825 + 10, 2.27]} scale={[12.55, 2, 4.84]} />
+                        <CollisionBox visible={true} position={[1.92, -16.14 + 10, 1.85]} rotation={[0, 0.82, 0]} scale={[12.55, 2, 7.78]} />
+                        <CollisionBox visible={true} position={[-1.35, -26.46 + 10, -0.54]} rotation={[0, 0.67, 0]} scale={[12.55, 2, 9.11]} />
 
-                        <EndCollisionBox visible={true} position={[2.7, -26.46, 3.7]} rotation={[0, 0, 0]} scale={2} />
+                        <EndCollisionBox visible={true} position={[2.7, -26.46 + 10, 3.7]} rotation={[0, 0, 0]} scale={2} />
                         {/* <CollisionBox position={[2.14, -6.45, 3.57]} scale={2} /> */}
 
                         {balls.map((v, i) => (
-                            <Sphere scale={scale} randomColor={randomColor} setBalls={setBalls} info={v} key={v.index} position={[0, 5, 0]} />
+                            <Sphere scale={scale} randomColor={randomColor} setBalls={setBalls} info={v} key={v.index} position={[0, 15, 0]} />
                         ))}
 
 
@@ -126,16 +128,16 @@ export default function App() {
                     onMouseUp={(obj) => {
                         console.log(obj.target.object.position, obj.target.object.rotation, obj.target.object.scale);
                     }} /> */}
-                    <Marker rotation={[0, 0, 0]} position={[0, -3, -5]} scale={3}>
+                    <Marker rotation={[0, 0, 0]} position={[0, -3 + 10, -5]} scale={3}>
                         {/* Anything in here is regular HTML, these markers are from font-awesome */}
                         <FaMapMarkerAlt style={{ color: 'red' }} />
                     </Marker>
-                    <Marker rotation={[0, 0, 0]} position={[-3.5, -13, -3]} scale={3}>
+                    <Marker rotation={[0, 0, 0]} position={[-3.5, -13 + 10, -3]} scale={3}>
                         {/* Anything in here is regular HTML, these markers are from font-awesome */}
                         <FaMapMarkerAlt style={{ color: 'red' }} />
                     </Marker>
-                    <Marker rotation={[0, 0, 0]} position={[2.7, -23, 4]} scale={3}>
-                        {/* Anything in here is regular HTML, these markers are from font-awesome */}
+                    <Marker rotation={[0, 0, 0]} position={[2.7, -23 + 10, 4]} scale={3}>
+                        <div style={{ position: 'absolute', fontSize: 10, letterSpacing: -0.5, left: 17.5 }}>GOAL</div>
                         <FaMapMarkerAlt style={{ color: 'red' }} />
                     </Marker>
                 </Suspense>
@@ -293,7 +295,13 @@ function Sphere(props) {
         if (bodyRef.current) {
             if (bodyRef.current.translation().y < -100) {
                 bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+                // bodyRef.current.collider().setSensor(true)
                 bodyRef.current.raw().sleep()
+
+                // bodyRef.sleep()
+                // ref.current.visible = true
+
+                ref.current.visible = false;
             }
         }
     })
