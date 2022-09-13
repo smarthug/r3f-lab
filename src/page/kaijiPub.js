@@ -1,7 +1,7 @@
-import * as THREE from 'three'
+// import * as THREE from 'three'
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Sky, Environment, Cloud, TransformControls, Html } from '@react-three/drei'
+import { useGLTF, OrbitControls, Sky, Environment, Cloud, Html } from '@react-three/drei'
 import { Debug, Physics, RigidBody } from '@react-three/rapier'
 import { useControls, button } from 'leva'
 import { FaMapMarkerAlt } from 'react-icons/fa'
@@ -268,17 +268,17 @@ function EndCollisionBox(props) {
     )
 }
 
-function PositionHelper({ attach }) {
+// function PositionHelper({ attach }) {
 
-    const ref = useRef()
+//     const ref = useRef()
 
-    return (
-        <mesh ref={ref} onDoubleClick={() => attach(ref)}>
-            <boxGeometry />
-            <meshNormalMaterial />
-        </mesh>
-    )
-}
+//     return (
+//         <mesh ref={ref} onDoubleClick={() => attach(ref)}>
+//             <boxGeometry />
+//             <meshNormalMaterial />
+//         </mesh>
+//     )
+// }
 
 
 
@@ -333,7 +333,7 @@ function ThreeHolePlate(props) {
     const { nodes } = useGLTF('/threeHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
@@ -355,7 +355,7 @@ function FourHolePlate(props) {
     const { nodes } = useGLTF('/fourHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
@@ -377,7 +377,7 @@ function FiveHolePlate(props) {
     const { nodes } = useGLTF('/fiveHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })

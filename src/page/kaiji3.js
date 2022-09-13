@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+// import * as THREE from 'three'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Sky, Environment, Cloud, TransformControls } from '@react-three/drei'
@@ -11,7 +11,7 @@ import { useControls, button } from 'leva'
 
 let currentSelectedMesh = null;
 
-let startPosition = new THREE.Vector3();
+// let startPosition = new THREE.Vector3();
 // let resultVector = new THREE.Vector3();
 
 // let deleteBoxHandle = 0
@@ -227,7 +227,7 @@ function ThreeHolePlate(props) {
     const { nodes } = useGLTF('/threeHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
@@ -249,7 +249,7 @@ function FourHolePlate(props) {
     const { nodes } = useGLTF('/fourHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
@@ -271,7 +271,7 @@ function FiveHolePlate(props) {
     const { nodes } = useGLTF('/fiveHolePlate.glb')
     // console.log(nodes);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime()
+        // const t = state.clock.getElapsedTime()
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) * 0.1, y: 0, z: Math.sin(t) * 0.1 })
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
     })
