@@ -18,6 +18,9 @@ let outBalls = null
 
 let orbitControlsRef = React.createRef();
 
+let x = 0;
+let y = 0;
+
 export default function App() {
     const [balls, setBalls] = useState([])
     outBalls = balls;
@@ -205,8 +208,8 @@ function CollisionBox(props) {
             <mesh
                 {...props}>
                 <boxGeometry />
-                {/* <meshStandardMaterial transparent={true} opacity={0} wireframe={true} /> */}
-                <meshStandardMaterial wireframe={true} />
+                <meshStandardMaterial transparent={true} opacity={0} wireframe={true} />
+                {/* <meshStandardMaterial wireframe={true} /> */}
             </mesh>
 
         </RigidBody >
@@ -334,6 +337,7 @@ function PlayerSphere(props) {
     // useHelper(ref, THREE.BoxHelper, "red")
 
     useFrame((state) => {
+        // const t = state.clock.getDeltaTime()
         if (bodyRef.current) {
             if (bodyRef.current.translation().y < -100) {
                 bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
@@ -345,6 +349,13 @@ function PlayerSphere(props) {
 
                 ref.current.visible = false;
             }
+            // const angle = orbitControlsRef.current.getAzimuthalAngle();
+
+            // tempVector.set(x / 100 * t, 0, y / 100 * t).applyAxisAngle(upVector, angle);
+            // // player.position.addScaledVector(tempVector, params.playerSpeed * delta);
+            // bodyRef.current.applyImpulse({ x: tempVector.x, y: 0, z: tempVector.z })
+
+
         }
     })
 
@@ -359,8 +370,8 @@ function PlayerSphere(props) {
     }, [props])
 
     function handleOrientation(e) {
-        const x = e.gamma;
-        const y = e.beta;
+        x = e.gamma;
+        y = e.beta;
         // Ball._player.body.velocity.x += x;
         // Ball._player.body.velocity.y += y;
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
