@@ -1,4 +1,5 @@
 // import * as THREE from 'three'
+import * as THREE from 'three'
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Sky, Environment, Cloud, Html } from '@react-three/drei'
@@ -8,13 +9,14 @@ import { FaMapMarkerAlt } from 'react-icons/fa'
 import Youtube from "react-youtube";
 import confetti from 'canvas-confetti'
 // console.log(confetti);
-
+const upVector = new THREE.Vector3(0, 1, 0);
+const tempVector = new THREE.Vector3();
 
 let currentSelectedMesh = null;
 
 let outBalls = null
 
-
+let orbitControlsRef = React.createRef();
 
 export default function App() {
     const [balls, setBalls] = useState([])
@@ -78,15 +80,16 @@ export default function App() {
             transformControls: transformRef,
         }
 
-        const id = setInterval(() => {
-            setBalls(balls => [...balls, { handle: 0, mesh: null, index: balls.length }])
-        }, 3000)
+        // const id = setInterval(() => {
+        //     setBalls(balls => [...balls, { handle: 0, mesh: null, index: balls.length }])
+        // }, 3000)
 
 
-
+        setBalls(balls => [...balls, { handle: 0, mesh: null, index: balls.length }])
 
         return (() => {
-            clearInterval(id)
+            // clearInterval(id)
+            setBalls([])
         })
     }, [])
 
@@ -122,14 +125,17 @@ export default function App() {
                         <EndCollisionBox visible={true} position={[2.7, -26.46 + 10, 3.7]} rotation={[0, 0, 0]} scale={2} />
                         {/* <CollisionBox position={[2.14, -6.45, 3.57]} scale={2} /> */}
 
-                        {balls.map((v, i) => (
+                        {/* {balls.map((v, i) => (
                             <Sphere scale={scale} randomColor={randomColor} setBalls={setBalls} info={v} key={v.index} position={[0, 15, 0]} />
-                        ))}
+                        ))} */}
 
+                        {balls.map((v, i) => (
+                            <PlayerSphere scale={scale} randomColor={randomColor} setBalls={setBalls} info={v} key={v.index} position={[0, 15, 0]} />
+                        ))}
 
                     </Physics>
                     {/* <PositionHelper /> */}
-                    <OrbitControls makeDefault />
+                    <OrbitControls ref={orbitControlsRef} makeDefault />
                     {/* <TransformControls ref={transformRef}
                     onMouseDown={(obj) => {
                     }}
@@ -176,42 +182,27 @@ export default function App() {
 }
 // z={-(i / 10) * depth - 20}
 function CollisionBox(props) {
-    const ref = useRef()
-    const meshRef = useRef()
-
-
-
 
     function remove(obj) {
-
-
-        // filter 써야겠네
-        // console.log(obj);
-        outBalls.map((v, i) => {
+        outBalls.map((v) => {
             if (v.handle === obj.target.handle) {
                 obj.target.collider().setSensor(true)
                 obj.target.sleep()
-                // ref.current.visible = true
-
                 v.mesh.visible = false;
             }
             return null
-            // 근데 찾는것도 world api 에 접근가능해야 하잖아??
         })
     }
 
     return (
-        <RigidBody ref={ref}
+        <RigidBody
             onCollisionEnter={remove}
-            type="fixed" colliders={"cuboid"} >
+            type="fixed"
+            colliders={"cuboid"}
+        >
 
 
             <mesh
-                ref={meshRef}
-                onDoubleClick={() => {
-                    currentSelectedMesh = meshRef.current
-                    console.log("currentSelectedMesh: ", currentSelectedMesh);
-                }}
                 {...props}>
                 <boxGeometry />
                 {/* <meshStandardMaterial transparent={true} opacity={0} wireframe={true} /> */}
@@ -335,6 +326,67 @@ function Sphere(props) {
     )
 }
 
+function PlayerSphere(props) {
+    const ref = useRef()
+    const bodyRef = useRef()
+    const color = props.randomColor ? [Math.random(), Math.random(), Math.random()] : props.info.index % 2 === 0 ? "tomato" : "cadetblue"
+
+    // useHelper(ref, THREE.BoxHelper, "red")
+
+    useFrame((state) => {
+        if (bodyRef.current) {
+            if (bodyRef.current.translation().y < -100) {
+                bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+                // bodyRef.current.collider().setSensor(true)
+                bodyRef.current.raw().sleep()
+
+                // bodyRef.sleep()
+                // ref.current.visible = true
+
+                ref.current.visible = false;
+            }
+        }
+    })
+
+
+    useEffect(() => {
+        // console.log(props.info);
+        outBalls[props.info.index].handle = bodyRef.current.handle;
+        outBalls[props.info.index].mesh = ref.current;
+        // console.log(outBalls);
+
+        window.addEventListener("deviceorientation", handleOrientation, true);
+    }, [props])
+
+    function handleOrientation(e) {
+        const x = e.gamma;
+        const y = e.beta;
+        // Ball._player.body.velocity.x += x;
+        // Ball._player.body.velocity.y += y;
+        // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
+        // bodyRef.current.applyImpulse({ x: x / 100, y: 0, z: y / 100 })
+        // bodyRef.current.raw().resetForces()
+        const angle = orbitControlsRef.current.getAzimuthalAngle();
+        // orbitControlsRef.current.getA
+        tempVector.set(x / 100, 0, y / 100).applyAxisAngle(upVector, angle);
+        // player.position.addScaledVector(tempVector, params.playerSpeed * delta);
+        bodyRef.current.applyImpulse({ x: tempVector.x, y: 0, z: tempVector.z })
+        // player.rotation.y = Math.atan2(tempVector.x, tempVector.z)
+    }
+
+
+
+    return (
+        <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
+            <mesh ref={ref} castShadow receiveShadow {...props}>
+                <sphereGeometry args={[0.5, 32, 32]} />
+                {/* <meshStandardMaterial color="white" /> */}
+                <meshPhysicalMaterial transmission={1} color={color} thickness={1} roughness={0} />
+            </mesh>
+        </RigidBody>
+    )
+}
+
 
 
 
@@ -355,7 +407,7 @@ function ThreeHolePlate(props) {
     })
 
     useEffect(() => {
-        window.addEventListener("deviceorientation", handleOrientation, true);
+        // window.addEventListener("deviceorientation", handleOrientation, true);
     }, [])
 
     function handleOrientation(e) {
@@ -364,7 +416,7 @@ function ThreeHolePlate(props) {
         // Ball._player.body.velocity.x += x;
         // Ball._player.body.velocity.y += y;
         // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
-        ref.current.setNextKinematicRotation({ x: y/100 , y: 0, z: -x/100 })
+        ref.current.setNextKinematicRotation({ x: y / 100, y: 0, z: -x / 100 })
     }
 
     return (
