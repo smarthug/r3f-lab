@@ -4,3 +4,4 @@
 export * as kaiji from './kaiji3'
 export * as kaijiPub from './kaijiPub'
 export * as kaijiDeviceControl from './kaijiDeviceControl'
+export * as RollABall from './rollABall'

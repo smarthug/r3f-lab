@@ -286,48 +286,48 @@ function EndCollisionBox(props) {
 
 
 
-function Sphere(props) {
-    const ref = useRef()
-    const bodyRef = useRef()
-    const color = props.randomColor ? [Math.random(), Math.random(), Math.random()] : props.info.index % 2 === 0 ? "tomato" : "cadetblue"
+// function Sphere(props) {
+//     const ref = useRef()
+//     const bodyRef = useRef()
+//     const color = props.randomColor ? [Math.random(), Math.random(), Math.random()] : props.info.index % 2 === 0 ? "tomato" : "cadetblue"
 
-    // useHelper(ref, THREE.BoxHelper, "red")
+//     // useHelper(ref, THREE.BoxHelper, "red")
 
-    useFrame((state) => {
-        if (bodyRef.current) {
-            if (bodyRef.current.translation().y < -100) {
-                bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
-                // bodyRef.current.collider().setSensor(true)
-                bodyRef.current.raw().sleep()
+//     useFrame((state) => {
+//         if (bodyRef.current) {
+//             if (bodyRef.current.translation().y < -100) {
+//                 bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 });
+//                 // bodyRef.current.collider().setSensor(true)
+//                 bodyRef.current.raw().sleep()
 
-                // bodyRef.sleep()
-                // ref.current.visible = true
+//                 // bodyRef.sleep()
+//                 // ref.current.visible = true
 
-                ref.current.visible = false;
-            }
-        }
-    })
-
-
-    useEffect(() => {
-        // console.log(props.info);
-        outBalls[props.info.index].handle = bodyRef.current.handle;
-        outBalls[props.info.index].mesh = ref.current;
-        // console.log(outBalls);
-    }, [props])
+//                 ref.current.visible = false;
+//             }
+//         }
+//     })
 
 
+//     useEffect(() => {
+//         // console.log(props.info);
+//         outBalls[props.info.index].handle = bodyRef.current.handle;
+//         outBalls[props.info.index].mesh = ref.current;
+//         // console.log(outBalls);
+//     }, [props])
 
-    return (
-        <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
-            <mesh ref={ref} castShadow receiveShadow {...props}>
-                <sphereGeometry args={[0.5, 32, 32]} />
-                {/* <meshStandardMaterial color="white" /> */}
-                <meshPhysicalMaterial transmission={1} color={color} thickness={1} roughness={0} />
-            </mesh>
-        </RigidBody>
-    )
-}
+
+
+//     return (
+//         <RigidBody ref={bodyRef} type={"dynamic"} colliders="ball" restitution={0.7}>
+//             <mesh ref={ref} castShadow receiveShadow {...props}>
+//                 <sphereGeometry args={[0.5, 32, 32]} />
+//                 {/* <meshStandardMaterial color="white" /> */}
+//                 <meshPhysicalMaterial transmission={1} color={color} thickness={1} roughness={0} />
+//             </mesh>
+//         </RigidBody>
+//     )
+// }
 
 function PlayerSphere(props) {
     const ref = useRef()
@@ -421,14 +421,14 @@ function ThreeHolePlate(props) {
         // window.addEventListener("deviceorientation", handleOrientation, true);
     }, [])
 
-    function handleOrientation(e) {
-        const x = e.gamma;
-        const y = e.beta;
-        // Ball._player.body.velocity.x += x;
-        // Ball._player.body.velocity.y += y;
-        // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
-        ref.current.setNextKinematicRotation({ x: y / 100, y: 0, z: -x / 100 })
-    }
+    // function handleOrientation(e) {
+    //     const x = e.gamma;
+    //     const y = e.beta;
+    //     // Ball._player.body.velocity.x += x;
+    //     // Ball._player.body.velocity.y += y;
+    //     // ref.current.setNextKinematicRotation({ x: Math.cos(t) , y: Math.sin(t), z: Math.cos(t) * 0.05 })
+    //     ref.current.setNextKinematicRotation({ x: y / 100, y: 0, z: -x / 100 })
+    // }
 
     return (
         <RigidBody ref={ref} colliders="trimesh" type="kinematicPosition">
