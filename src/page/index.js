@@ -5,3 +5,6 @@ export * as kaiji from './kaiji3'
 export * as kaijiPub from './kaijiPub'
 export * as kaijiDeviceControl from './kaijiDeviceControl'
 export * as RollABall from './rollABall'
+export * as kaijiPubUpgrade from './kaijiPubUpgrade'
+
+export * as Multiplay from './multiplay'
