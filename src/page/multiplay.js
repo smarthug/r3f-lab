@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
+import MusicPlayer from "../components/musicPlayer";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 // import GUI from "lil-gui";
 // import Peer from 'simple-peer'
@@ -81,6 +82,7 @@ export default function Main() {
             <button onClick={() => {
                 p.send(prompt())
             }}>Send</button>
+            <MusicPlayer />
         </div>
     );
 }
