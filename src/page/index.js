@@ -8,3 +8,5 @@ export * as RollABall from './rollABall'
 export * as kaijiPubUpgrade from './kaijiPubUpgrade'
 
 export * as Multiplay from './multiplay'
+
+export * as Theatre from './theatre'
