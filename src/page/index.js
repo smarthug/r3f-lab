@@ -10,3 +10,5 @@ export * as kaijiPubUpgrade from './kaijiPubUpgrade'
 export * as Multiplay from './multiplay'
 
 export * as Theatre from './theatre'
+
+export * as QuestionBlock from './questionBlock'

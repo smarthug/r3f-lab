@@ -10,8 +10,8 @@ import { useEffect } from 'react'
 
 // create-react-app
 if (process.env.NODE_ENV === 'development') {
-    studio.initialize()
-    studio.extend(extension)
+    // studio.initialize()
+    // studio.extend(extension)
 }
 // studio.initialize()
 // studio.extend(extension)
